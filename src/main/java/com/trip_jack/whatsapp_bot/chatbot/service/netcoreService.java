@@ -148,7 +148,7 @@ public class netcoreService implements WhatsappVendorInterface {
                                 "text": "%s"
                             },
                             "body": "%s",
-                            "footer_text": "$s,
+                            "footer_text": "%s",
                             "button_text": "Select",
                             "button": %s
                         }
