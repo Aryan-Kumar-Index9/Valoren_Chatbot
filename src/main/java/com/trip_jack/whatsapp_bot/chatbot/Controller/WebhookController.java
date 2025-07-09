@@ -97,80 +97,84 @@ public class WebhookController {
             String currentState = user.getUserState();
             System.out.println(currentState);
 
-            if (currentState == null || currentState.equals("new")) {
-                if (userMessage.equalsIgnoreCase("hi") || userMessage.equalsIgnoreCase("hello")) {
-                    message_text="Hi, Welcome to the TRIP JACK!!!!!!!!!!!!!!!";
-                    logMessage(botNumber, userNumber, message_text, "outgoing");
-                    NetcoreService.sendTextMessage(userNumber, message_text);
-                    message_text="What is your Name?";
-                    logMessage(botNumber, userNumber, message_text, "outgoing");
-                    NetcoreService.sendTextMessage(userNumber, message_text);
-                    user.setUserState("Asked name");
-                    userRepository.save(user);
-                    //trailTemplate.create_template_trail();
-                    // fetch_template_details.fetch_template_details_function("226799", "aryan_s_sample_template");
-                    // delete_Trail_template.delete_trail_template_function("aryan_s_sample_template");
-                    return ResponseEntity.ok("asked_name");
-                } 
-                
-                else {
-                    message_text="Please type \"hi\" or \"hello\" to start the conversation.";
-                    logMessage(botNumber, userNumber, message_text, "outgoing");
-                    NetcoreService.sendTextMessage(userMessage, message_text);
-                    return ResponseEntity.ok("invalid_start");
-                }
-            }
-            else if(currentState.equalsIgnoreCase("asked name")){
-                if ( containsDigit(userMessage)== false && containsSpecialCharacter(userMessage)== false ){
-                    user.setName(userMessage);
-                    user.setUserState("Asking Gmail");
-                    message_text="Name Saved. What is your gmail??";
-                    NetcoreService.sendTextMessage(userNumber, message_text);
-                    logMessage(botNumber, userNumber, message_text, "outgoing");
-                    userRepository.save(user);
-                    return ResponseEntity.ok("Name has been saved and Gmail has been asked");
-                }
-                else{
-                    message_text="Invalid name. Please enter the valid name with no number and no speacial characters!";
-                    NetcoreService.sendTextMessage(userNumber, message_text);
-                    logMessage(botNumber, userNumber, message_text, "outgoing");
-                    return ResponseEntity.ok("Entered the invalid name & asked for the name again.");
-                }
-            }
-            else if(currentState.equalsIgnoreCase("Asking Gmail")){
-                user.setEmail(userMessage);
-                message_text="Mail have been saved. Tell me from where do you want to go and from where?";
-                NetcoreService.sendTextMessage(userNumber, message_text);
-                logMessage(botNumber, userNumber, message_text, "outgoing");
-                user.setUserState("Asking location");
-                userRepository.save(user);
-                return ResponseEntity.ok("Gmail saved and asking for location.");
-            }
+            String normalizedState = (currentState == null) ? "new" : currentState.toLowerCase();
 
-            else if(currentState.equalsIgnoreCase("Asking Location")){
-                user.setFromTo(userMessage);
-                message_text="Arrival and departure location has been saved!";
-                NetcoreService.sendTextMessage(userNumber, message_text);
-                logMessage(botNumber, userNumber, message_text, "outgoing");
-                message_text="Dates at which you want to travel.";
-                NetcoreService.sendTextMessage(userNumber, message_text);
-                logMessage(botNumber, userNumber, message_text, "outgoing");
-                user.setUserState("Asking Dates");
-                userRepository.save(user);
-                return ResponseEntity.ok("Location saved and asking for dates");
-            }
+            switch (normalizedState) {
+                case "new":
+                    if (userMessage.equalsIgnoreCase("hi") || userMessage.equalsIgnoreCase("hello")) {
+                        message_text = "Hi, Welcome to the TRIP JACK!!!!!!!!!!!!!!!";
+                        logMessage(botNumber, userNumber, message_text, "outgoing");
+                        NetcoreService.sendTextMessage(userNumber, message_text);
+                        message_text = "What is your Name?";
+                        logMessage(botNumber, userNumber, message_text, "outgoing");
+                        NetcoreService.sendTextMessage(userNumber, message_text);
+                        user.setUserState("Asked name");
+                        userRepository.save(user);
+                        //trailTemplate.create_template_trail();
+                        // fetch_template_details.fetch_template_details_function("226799", "aryan_s_sample_template");
+                        // delete_Trail_template.delete_trail_template_function("aryan_s_sample_template");
+                        return ResponseEntity.ok("asked_name");
+                    } else {
+                        message_text = "Please type \"hi\" or \"hello\" to start the conversation.";
+                        logMessage(botNumber, userNumber, message_text, "outgoing");
+                        NetcoreService.sendTextMessage(userMessage, message_text);
+                        return ResponseEntity.ok("invalid_start");
+                    }
 
-            else if (currentState.equalsIgnoreCase("Asking Dates")){
-                user.setStartEndDate(userMessage);
-                message_text="Dates has been saved!.";
-                NetcoreService.sendTextMessage(userNumber, message_text);
-                logMessage(botNumber, userNumber, message_text, "outgoing");
-                message_text="Dates has been saved. Thankyou for your time.";
-                NetcoreService.sendTextMessage(userNumber, message_text);
-                logMessage(botNumber, userNumber, message_text, "outgoing");
-                user.setUserState("Completed");
-                userRepository.save(user);
-                return ResponseEntity.ok("Chat ended");
+                case "asked name":
+                    if (!containsDigit(userMessage) && !containsSpecialCharacter(userMessage)) {
+                        user.setName(userMessage);
+                        user.setUserState("Asking Gmail");
+                        message_text = "Name Saved. What is your gmail??";
+                        NetcoreService.sendTextMessage(userNumber, message_text);
+                        logMessage(botNumber, userNumber, message_text, "outgoing");
+                        userRepository.save(user);
+                        return ResponseEntity.ok("Name has been saved and Gmail has been asked");
+                    } else {
+                        message_text = "Invalid name. Please enter the valid name with no number and no speacial characters!";
+                        NetcoreService.sendTextMessage(userNumber, message_text);
+                        logMessage(botNumber, userNumber, message_text, "outgoing");
+                        return ResponseEntity.ok("Entered the invalid name & asked for the name again.");
+                    }
+
+                case "asking gmail":
+                    user.setEmail(userMessage);
+                    message_text = "Mail have been saved. Tell me from where do you want to go and from where?";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    user.setUserState("Asking location");
+                    userRepository.save(user);
+                    return ResponseEntity.ok("Gmail saved and asking for location.");
+
+                case "asking location":
+                    user.setFromTo(userMessage);
+                    message_text = "Arrival and departure location has been saved!";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    message_text = "Dates at which you want to travel.";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    user.setUserState("Asking Dates");
+                    userRepository.save(user);
+                    return ResponseEntity.ok("Location saved and asking for dates");
+
+                case "asking dates":
+                    user.setStartEndDate(userMessage);
+                    message_text = "Dates has been saved!.";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    message_text = "Dates has been saved. Thankyou for your time.";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    user.setUserState("Completed");
+                    userRepository.save(user);
+                    return ResponseEntity.ok("Chat ended");
+
+                default:
+                    message_text = "Sorry, something went wrong. Please type hi or hello to start over.";
+                    NetcoreService.sendTextMessage(userNumber, message_text);
+                    logMessage(botNumber, userNumber, message_text, "outgoing");
+                    return ResponseEntity.ok("unexpected_state");
             }
             return ResponseEntity.ok("Success");
         }
